@@ -2,7 +2,10 @@ import React from 'react'
 
 function Remove() {
   return (
-    <div>Remove</div>
+    <div>
+      <button id="right">REMOVE ALL</button>
+      <button id="left">REMOVE Completed</button>
+    </div>
   )
 }
 
