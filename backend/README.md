@@ -1,234 +1,124 @@
-# Web Server Fundamentals
+# Phase 3 Project Guidelines
 
 ## Learning Goals
 
-- Understand how a web server works
-- Use Rack to create a simple, bare-bones web server
+- Build a web basic API with Sinatra and Active Record to support a React
+  frontend
 
 ## Introduction
 
-How does a web server work?
+Congrats on getting through all the material for Phase 3! Now's the time to put
+it all together and build something from scratch to reinforce what you know and
+expand your horizons.
 
-We open a browser and it uses HTTP to send a message to a server. Servers are
-just computers running code that waits for requests and sends back responses.
-But when you say `/search?item=shoes&size=13M`, how does it know to run the code
-to search for shoes of size 13M?
+The focus of this project is **building a Sinatra API backend** that uses
+**Active Record** to access and persist data in a database, which will be used
+by a separate **React frontend** that interacts with the database via the API.
 
-All web servers have a core architecture in common. By looking at that
-architecture, we can build a mental model for how all web servers work. As an
-analogy, we can explain how all cars work like this:
+## Requirements
 
-> "Explosions made by gasoline and fire make an inside wheel go round and that
-> inside wheel makes the outside wheels go round"
+For this project, you must:
 
-In the same way, we can say that all web servers work like this:
+- Use Active Record to interact with a database.
+- Have at least two models with a one-to-many relationship.
+- At a minimum, set up the following API routes in Sinatra:
+  - create and read actions for both models
+  - full CRUD capability for one of the models
+- Build a separate React frontend application that interacts with the API to
+  perform CRUD actions.
+- Use good OO design patterns. You should have separate classes for each of your
+  models, and create instance and class methods as necessary.
 
-> "They wait for an HTTP request and look at the HTTP verb and path, and then
-> run some conditional logic to find out which stuff to send back in the
-> response"
+For example, build a todo list application with a React frontend interface and a
+Sinatra backend API, where a user can:
 
-In Ruby, this idea of "a core architecture" for all web-server-like things is
-captured in a gem called Rack. Rails, which you'll learn in Phase 4, "rides on
-top of" Rack. Sinatra, which you'll learn in the coming lessons, "rides on top
-of" Rack too.
+- **Create** a new todo
+- **Read** a list of all todos
+- **Update** an individual todo
+- **Delete** a todo
 
-In fact, the idea of a base, common web-server library was such a good idea,
-other languages like Python and JavaScript (via the NodeJS environment)
-implemented their own "base" web server. By understanding the core mechanics of
-how a server works in Ruby, you'll have a **much** easier time learning how to
-work with servers in those other languages.
+A `Todo` can be tagged with a `Category`, so that each todo _belongs to_ a
+category and each category _has many_ todos.
 
-Before we get to the complexity of things built _on top of Rack_, let's get a
-simple server working on Rack by itself.
+## Getting Started
 
-**Note**: We'll be moving on from Rack shortly, so don't worry too much about
-understanding the exact syntax in this lesson. Focus on the concepts.
+### Backend Setup
 
-## Setup
+This repository has all the starter code needed to get a Sinatra backend up and
+running. [**Fork and clone**][fork link] this repository to get started. Then, run
+`bundle install` to install the gems.
 
-To code along with this lesson, run `bundle install`. We'll be using the
-[Rack gem][rack], which is included in the Gemfile.
+**Important**: Be sure you fork a copy of the repo into your GitHub account
+before cloning it. You can do this by using the link above or by clicking the
+"Octocat" button at the top of this page, then clicking "Fork" in the upper
+right corner of the repo page.
 
-## Setting up Rack
+[fork link]: https://github.com/learn-co-curriculum/phase-3-sinatra-react-project/fork
 
-Our goal with any web server is to be able to **receive a request** and **send a
-response**.
+The `app/controllers/application_controller.rb` file has an example GET route
+handler. Replace this route with routes for your project.
 
-To accomplish this with Rack, we need to create a class that responds to a
-single method: `#call`. All this method needs to do is return an array with
-three elements:
-
-- A [**status code**][http-status] (where `200` is used for `OK`)
-- A **response headers** hash with a `"Content-Type"` key that returns the
-  value of `text/html` (for HTML-based responses)
-- An array of strings to send back in the **body** of the response (in our case,
-  we can format the string like HTML: `"<p>Like this!</p>"`)
-
-Essentially, we need the `#call` method to return something like this:
-
-```txt
-[status code, headers hash, response body]
-```
-
-Here's an example that returns an HTML string:
-
-```rb
-[200, { "Content-Type" => "text/html" }, ["<h2>Hello <em>World</em>!</h2>"]]
-```
-
-## Creating a Rack-Based Web Server
-
-With this goal in mind, let's create a basic web server. Follow along with the
-instructions below.
-
-Let's create a file called `config.ru`. Files that are used by Rack end with
-`.ru` instead of `.rb` because they're normally loaded with a command called
-`rackup`. It's a way to indicate to other developers that this is our server
-definition file.
-
-Add this code to the `config.ru` file:
-
-```ruby
-require 'rack'
-
-class App
-  def call(env)
-    [200, { "Content-Type" => "text/html" }, ["<h2>Hello <em>World</em>!</h2>"]]
-  end
-end
-
-run App.new
-```
-
-When we run this code, Rack will essentially run in a loop in the background
-waiting for a **request** to come in. When it receives a request, it will call
-the `#call` method and pass in data about the request, so we can send back the
-appropriate **response**.
-
-Run this code from the command line:
+You can start your server with:
 
 ```console
-$ rackup config.ru
+$ bundle exec rake server
 ```
 
-Rack will print out something like:
+This will run your server on port
+[http://localhost:9292](http://localhost:9292).
 
-```text
-[2021-07-19 16:38:10] INFO  WEBrick 1.4.2
-[2021-07-19 16:38:10] INFO  ruby 2.6.3 (2019-04-16) [universal.x86_64-darwin20]
-[2021-07-19 16:38:10] INFO  WEBrick::HTTPServer#start: pid=34006 port=9292
+### Frontend Setup
+
+Your backend and your frontend should be in **two different repositories**.
+
+Create a new repository in a **separate folder** with a React app for your
+frontend. To do this, `cd` out of the backend project directory, and use
+[create-react-app][] to generate the necessary code for your React frontend:
+
+```console
+$ npx create-react-app my-app-frontend
 ```
 
-> WEBrick is a Ruby library that provides a simple HTTP server. Rack needs a web
-> server to handle connections, and WEBrick is the default since it's included
-> with Ruby. Later, we'll be replacing this with another more powerful Ruby
-> server, Thin.
+After creating the project locally, you should also
+[create a repository on GitHub][create repo] to host your repo and help
+collaborate, if you're working with a partner.
 
-Try visiting `http://localhost:9292` in your browser. This will send a GET
-request to your Rack server, and you should see the HTML response of
-`Hello World` appear!
+### Fetch Example
 
-Let's deconstruct this URL a little bit though. The URL is
-`http://localhost:9292/`. The protocol is `http`. That makes sense, but the
-domain is `localhost:9292`. What's going on there?
+Your React app should make fetch requests to your Sinatra backend! Here's an
+example:
 
-`localhost` is normally where a domain name like `google.com` goes. In this
-case, since you are running the server on your computer, `localhost` refers to
-the internal address of your computer.
-
-The last part of that URL is the `:9292` section. This the "port number" of your
-server. You may want to run multiple servers on one computer (for example, one
-for React and one for Sinatra) and having different ports allows them to be
-running simultaneously without conflicting.
-
-The path, or resource, that you are requesting is `/`. This is effectively like
-saying the home or default path. You should be able to go to
-`http://localhost:9292/` and see `Hello World` printed out by your web server!
-
-Feel free to change `config.ru` to add changes to your web server. If you make
-changes to `config.ru` **you'll have to shut down the server (`control + c`) and
-re-start it to see the changes**.
-
-We can also access different information about the **request** object by using
-the `env` argument that is passed into the `call` method. Try adding a
-`binding.pry` to the `#call` method:
-
-```rb
-require 'rack'
-require 'pry'
-
-class App
-  def call(env)
-    binding.pry
-    [200, { "Content-Type" => "text/html" }, ["<h2>Hello <em>World</em>!</h2>"]]
-  end
-end
-
-run App.new
+```js
+fetch("http://localhost:9292/test")
+  .then((r) => r.json())
+  .then((data) => console.log(data));
 ```
 
-Then, stop (`control + c`) and restart the server (`rackup config.ru`), and
-refresh the browser to make another request to the server. You should hit your
-`binding.pry` breakpoint, where you can explore the `env` hash with all the data
-about the request:
+## Project Tips
 
-```rb
-env["REQUEST_METHOD"]
-# => "GET"
-env["PATH_INFO"]
-# => "/"
-```
-
-From here, it's not too much of a leap to see how we could make our server more
-dynamic and set it up to send back **different responses** based on the
-**path**.
-
-For example:
-
-```rb
-require 'rack'
-require 'pry'
-
-class App
-  def call(env)
-    path = env["PATH_INFO"]
-
-    if path == "/"
-      [200, { "Content-Type" => "text/html" }, ["<h2>Hello <em>World</em>!</h2>"]]
-    elsif path == "/potato"
-      [200, { "Content-Type" => "text/html" }, ["<p>Boil 'em, mash 'em, stick 'em in a stew</p>"]]
-    else
-      [404, { "Content-Type" => "text/html" }, ["Page not found"]]
-    end
-  end
-end
-
-run App.new
-```
-
-Try restarting the server, and make requests in the browser to see the
-response change based on the path:
-
-- [http://localhost:9292/](http://localhost:9292/)
-- [http://localhost:9292/potato](http://localhost:9292/potato)
-- [http://localhost:9292/home](http://localhost:9292/home)
-
-This conditional logic based on the path (and also the HTTP verb, as we'll see
-later) is known as **routing**, and it's is basically what web servers do all
-day long. Rails, Sinatra, any web programming framework you can name: one of
-their key features is to simplify and standardize how routing works so we can
-focus on working with data and generating responses.
-
-## Conclusion
-
-Rack is a simple, low-level tool for writing servers in Ruby. Since it's such
-a low-level tool, it can be challenging to build more complex applications with.
-In the next lesson, we'll learn how to use Sinatra to help with some common
-tasks when building a web server.
+- This project is intended to focus more on the backend than the frontend, so
+  try and keep the React side of things relatively simple. Focus on working with
+  Active Record and performing CRUD actions. What are some interesting queries you can write? What kinds of questions can you ask of your data?
+- Once you have a project idea, come up with a domain model and decide what
+  relationships exist between the models in your application. Use a tool like
+  [dbdiagram.io][] to help visualize your models.
+- Decide on your API endpoints. What data should they return? What kind of CRUD
+  action should they perform? What data do they need from the client?
+- Use [Postman][postman download] to test your endpoints.
+- Use `binding.pry` to debug your requests on the server. It's very helpful to use a
+  `binding.pry` in your controller within a route to see what `params` are being
+  sent.
+- Use the [Network Tab in the Dev Tools][network tab] in the frontend to debug
+  your requests.
 
 ## Resources
 
-- [Rack gem][rack]
+- [create-react-app][]
+- [dbdiagram.io][]
+- [Postman][postman download]
 
-[rack]: https://github.com/rack/rack
-[http-status]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+[create-react-app]: https://create-react-app.dev/docs/getting-started
+[create repo]: https://docs.github.com/en/get-started/quickstart/create-a-repo
+[dbdiagram.io]: https://dbdiagram.io/
+[postman download]: https://www.postman.com/downloads/
+[network tab]: https://developer.chrome.com/docs/devtools/network/
