@@ -1,18 +1,15 @@
-require 'rack'
-require 'pry'
+require_relative "./config/environment"
 
-class App
-  def call(env)
-    path = env["PATH_INFO"]
-
-    if path == "/"
-      [200, { "Content-Type" => "text/html" }, ["<h2>Hello <em>World</em>!</h2>"]]
-    elsif path == "/potato"
-      [200, { "Content-Type" => "text/html" }, ["<p>Boil 'em, mash 'em, stick 'em in a stew</p>"]]
-    else
-      [404, { "Content-Type" => "text/html" }, ["Page not found"]]
-    end
+# Allow CORS (Cross-Origin Resource Sharing) requests
+use Rack::Cors do
+  allow do
+    origins '*'
+    resource '*', headers: :any, methods: [:get, :post, :delete, :put, :patch, :options, :head]
   end
 end
 
-run App.new
+# Parse JSON from the request body into the params hash
+use Rack::JSONBodyParser
+
+# Our application
+run ApplicationController
